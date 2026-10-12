@@ -22,7 +22,13 @@ def search(args):
     queries = args.queries.split(";") if args.queries else expand_queries(args.role, args.industry)
     queries = list(dict.fromkeys(q.strip() for q in queries if q.strip()))[:6]
     sites = ["indeed", "linkedin", "arbeitsagentur"] if args.site == "Combined" else [args.site]
-    collected, warnings, coverage = collect(queries, sites, args.location, args.days, args.count, args.remote)
+    collected, warnings, coverage = ([], [], []) if args.site == "Company careers" else collect(queries, sites, args.location, args.days, args.count, args.remote)
+    if args.site in ("Combined", "Company careers"):
+        from careers import cached_jobs
+        career_rows, career_notes, career_coverage = cached_jobs(args.role, args.location)
+        collected = career_rows + collected
+        warnings.extend(career_notes)
+        coverage.extend(career_coverage)
     rows = deduplicate(collected)
     candidate_count = len(rows)
     duplicate_count = len(collected) - len(rows)
@@ -39,13 +45,13 @@ def search(args):
         esc = lambda key: html.escape(str(row.get(key) or ""))
         url = str(row.get("job_url") or "")
         link = f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">Open job listing</a>' if url.startswith(("https://", "http://")) else ""
-        cards.append(f'<article><h2>{len(cards)+1}. {esc("title")}</h2><p>{esc("company")} · {esc("location")}</p><p>{esc("sources")} · Posted: {esc("date_posted") or "Not supplied"}</p><p><strong>{esc("seniority_check")}</strong><br>{esc("fit_note")}</p><p>Relevant excerpt from the listing:</p><blockquote>{esc("evidence")}</blockquote>{link}<details><summary>Full description</summary><pre>{esc("description") or "Open the listing for the full description."}</pre></details></article>')
+        cards.append(f'<article><h2>{len(cards)+1}. {esc("title")}</h2><p>{esc("company")} · {esc("location")}</p><p>{esc("sources")} · {esc("career_status")} · Posted: {esc("date_posted") or "Not supplied"}</p><p><strong>{esc("seniority_check")}</strong><br>{esc("fit_note")}</p><p>Relevant excerpt from the listing:</p><blockquote>{esc("evidence")}</blockquote>{link}<details><summary>Full description</summary><pre>{esc("description") or "Open the listing for the full description."}</pre></details></article>')
     title = html.escape(f"{args.role} — {args.location}")
     report = OUTPUT / f"jobs-{stamp}.html"
     coverage_html = '<h2>Source coverage</h2><ul>' + ''.join(f'<li>{html.escape(c["site"])} — {html.escape(c["query"])}: {html.escape(c["status"])} ({c["count"]})</li>' for c in coverage) + '</ul>'
     notes = " ".join(html.escape(w) for w in dict.fromkeys(warnings))
 
-    report.write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Germany job results</title><style>body{font:16px system-ui;background:#f2f5fa;color:#15233b;max-width:950px;margin:40px auto;padding:0 20px}article{background:white;border:1px solid #d9e1ed;border-radius:12px;padding:22px;margin:16px 0}h2{font-size:20px}a{color:#1255ad}details{margin-top:18px}pre{white-space:pre-wrap;font:14px system-ui;overflow-wrap:anywhere}blockquote{border-left:3px solid #1255ad;padding-left:15px;color:#465775}</style>' + f'<h1>{title}</h1><p>{len(rows)} ranked listings from {candidate_count} candidates · {html.escape(args.site)} · Last {args.days} days · Retrieved {datetime.now():%Y-%m-%d %H:%M}</p><p>Industry / skills: {html.escape(args.industry) or "Any"} · Seniority: {html.escape(args.seniority)} · {rejected} listings excluded by date, remote or experience checks.</p><p>Searches: {html.escape("; ".join(queries))}</p><p>Ordered by transparent title, industry and experience checks, then newest first. No AI. Unknown dates or seniority are labelled for review. Location filtering is supplied by each source (approximately 50 km around a city).</p><p>{notes}</p>' + ("".join(cards) or '<p>No listings available. Broaden the role, industry or dates, or try another source.</p>') + coverage_html + f'<p>{duplicate_count} duplicate listings consolidated. Sources can fail or return incomplete results; this is not exhaustive coverage.</p></html>', encoding="utf-8")
+    report.write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Germany job results</title><style>body{font:16px system-ui;background:#f2f5fa;color:#15233b;max-width:950px;margin:40px auto;padding:0 20px}article{background:white;border:1px solid #d9e1ed;border-radius:12px;padding:22px;margin:16px 0}h2{font-size:20px}a{color:#1255ad}details{margin-top:18px}pre{white-space:pre-wrap;font:14px system-ui;overflow-wrap:anywhere}blockquote{border-left:3px solid #1255ad;padding-left:15px;color:#465775}</style>' + f'<h1>{title}</h1><p>{len(rows)} ranked listings from {candidate_count} candidates · {html.escape(args.site)} · Last {args.days} days · Retrieved {datetime.now():%Y-%m-%d %H:%M}</p><p>Industry / skills: {html.escape(args.industry) or "Any"} · Seniority: {html.escape(args.seniority)} · {rejected} listings excluded by date, remote or experience checks.</p><p>Searches: {html.escape("; ".join(queries))}</p><p>Ordered by transparent title, industry and experience checks, then newest first. No AI. Unknown dates or seniority are labelled for review. Job boards supply their own location filtering. Company careers use confirmed country/city names; see coverage notes below.</p><p>{notes}</p>' + ("".join(cards) or '<p>No listings available. Broaden the role, industry or dates, or try another source.</p>') + coverage_html + f'<p>{duplicate_count} duplicate listings consolidated. Sources can fail or return incomplete results; this is not exhaustive coverage.</p></html>', encoding="utf-8")
     result = {"count": len(rows), "candidates": candidate_count, "queries": queries, "warnings": warnings, "coverage": coverage, "duplicates": duplicate_count, "report": str(report), "csv": str(csv_path), "role": args.role, "location": args.location}
     (OUTPUT / "latest.json").write_text(json.dumps(result), encoding="utf-8")
     print(json.dumps(result), flush=True)
@@ -53,7 +59,7 @@ def search(args):
 
 def desktop():
     import tkinter as tk
-    from tkinter import messagebox, ttk
+    from tkinter import messagebox, ttk, simpledialog
 
     app = tk.Tk()
     app.title("JobSpy — Germany job search")
@@ -76,7 +82,7 @@ def desktop():
     for row, (label, var) in enumerate([("Job position / role", role), ("Industry or key skills", industry), ("Seniority", seniority), ("City / location", location), ("Source", site), ("Posted within days", days), ("Maximum results", count)], start=2):
         ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", pady=7)
         if var is site:
-            widget = ttk.Combobox(frame, textvariable=var, values=["Combined", "indeed", "linkedin", "arbeitsagentur", "glassdoor"], state="readonly")
+            widget = ttk.Combobox(frame, textvariable=var, values=["Combined", "Company careers", "indeed", "linkedin", "arbeitsagentur", "glassdoor"], state="readonly")
         elif var is seniority:
             widget = ttk.Combobox(frame, textvariable=var, values=["Any", "Junior / entry level", "Mid-level", "Senior"], state="readonly")
         else:
@@ -102,6 +108,7 @@ def desktop():
     log = None
     started = 0
     latest = None
+    career_mode = False
     OUTPUT.mkdir(exist_ok=True)
     try:
         latest = json.loads((OUTPUT / "latest.json").read_text(encoding="utf-8"))
@@ -121,6 +128,8 @@ def desktop():
         proc = None
         button.configure(state="normal")
         cancel.configure(state="disabled")
+        refresh_button.configure(state="normal")
+        add_button.configure(state="normal")
 
     def stop():
         if proc:
@@ -146,7 +155,12 @@ def desktop():
         code = proc.returncode
         finish()
         if code:
-            status.set("Search failed. Try another source; details are in output/search.log.")
+            status.set("Company check failed. The feed may be unavailable or disabled; saved jobs are preserved. Details: output/search.log." if career_mode else "Search failed. Try another source; details are in output/search.log.")
+            return
+        if career_mode:
+            from careers import status_report
+            webbrowser.open(status_report().as_uri())
+            status.set("Company check finished. The coverage report shows successes and failures. Search to use saved jobs.")
             return
         try:
             latest = json.loads((OUTPUT / "latest.json").read_text(encoding="utf-8"))
@@ -157,7 +171,8 @@ def desktop():
             status.set("Could not read the result file. Check output/search.log.")
 
     def run():
-        nonlocal proc, log, started
+        nonlocal proc, log, started, career_mode
+        career_mode = False
         try:
             d, n = int(days.get()), int(count.get())
             if not 1 <= d <= 100 or not 1 <= n <= 100 or not role.get().strip() or not location.get().strip():
@@ -179,9 +194,50 @@ def desktop():
             return
         started = time.monotonic()
         button.configure(state="disabled")
+        refresh_button.configure(state="disabled")
+        add_button.configure(state="disabled")
         cancel.configure(state="normal")
         status.set(f"Searching related titles on {site.get()}, then ranking locally… Allow up to 6 minutes.")
         app.after(300, poll)
+
+    def check_companies(add=False):
+        nonlocal proc, log, started, career_mode
+        if proc:
+            return
+        cmd = [sys.executable, str(ROOT / "careers.py")]
+        if add:
+            url = simpledialog.askstring("Add company", "Public Personio careers URL (https://company.jobs.personio.de):", parent=app)
+            if not url:
+                return
+            from careers import company_id
+            try:
+                slug = company_id(url)
+            except ValueError as exc:
+                messagebox.showerror("Unsupported career page", str(exc))
+                return
+            name = simpledialog.askstring("Company name", "Company display name:", initialvalue=slug, parent=app)
+            if not name:
+                return
+            cmd.extend(["--add-url", url, "--name", name])
+        career_mode = True
+        log = (OUTPUT / "search.log").open("w", encoding="utf-8")
+        try:
+            proc = subprocess.Popen(cmd, stdout=log, stderr=log, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except OSError as exc:
+            finish()
+            messagebox.showerror("Could not check companies", str(exc))
+            return
+        started = time.monotonic()
+        button.configure(state="disabled")
+        refresh_button.configure(state="disabled")
+        add_button.configure(state="disabled")
+        cancel.configure(state="normal")
+        status.set("Checking public company feeds. Saved jobs remain available if a company fails.")
+        app.after(300, poll)
+
+    def company_status():
+        from careers import status_report
+        webbrowser.open(status_report().as_uri())
 
     actions = ttk.Frame(frame)
     actions.grid(row=13, column=0, columnspan=2, sticky="w", pady=20)
@@ -191,6 +247,13 @@ def desktop():
     cancel.pack(side="left", padx=8)
     results = ttk.Button(actions, text="Open last results", command=open_results, state="normal" if latest else "disabled")
     results.pack(side="left")
+    companies_bar = ttk.Frame(frame)
+    companies_bar.grid(row=15, column=0, columnspan=2, sticky="w", pady=12)
+    refresh_button = ttk.Button(companies_bar, text="Refresh companies", command=check_companies)
+    refresh_button.pack(side="left")
+    ttk.Button(companies_bar, text="Company status", command=company_status).pack(side="left", padx=8)
+    add_button = ttk.Button(companies_bar, text="Add company", command=lambda: check_companies(True))
+    add_button.pack(side="left")
     ttk.Label(frame, textvariable=status, wraplength=690).grid(row=14, column=0, columnspan=2, sticky="w")
     def close():
         stop()
@@ -204,7 +267,7 @@ if __name__ == "__main__":
     parser.add_argument("--search", action="store_true")
     parser.add_argument("--role", default="software engineer")
     parser.add_argument("--location", default="Berlin, Germany")
-    parser.add_argument("--site", choices=["Combined", "indeed", "linkedin", "arbeitsagentur", "glassdoor"], default="Combined")
+    parser.add_argument("--site", choices=["Combined", "Company careers", "indeed", "linkedin", "arbeitsagentur", "glassdoor"], default="Combined")
     parser.add_argument("--days", type=int, default=7)
     parser.add_argument("--count", type=int, default=20)
     parser.add_argument("--remote", action="store_true")
