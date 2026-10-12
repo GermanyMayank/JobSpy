@@ -1,5 +1,38 @@
 # Germany job search — no AI
 
+## Phone access on the same Wi-Fi
+
+Double-click **Start Phone Access.cmd** on your PC. It opens a local pairing page
+with a QR code. Keep the PC awake, connect your phone to the same Wi-Fi, and scan
+the code with the phone camera. The phone interface supports searching, viewing
+results and descriptions, opening application links, filtering the company directory,
+refreshing feeds, adding supported companies and stopping an active phone task.
+The company-only source is selected initially for a fast search of saved jobs.
+
+If Windows blocks the connection, run **Allow Phone Access.cmd** once and accept
+the administrator prompt. It allows only the current interface/local address, local
+subnet, Python executable and TCP port 8765. It does not change the network profile,
+disable the firewall, forward a router port or publish the app on the internet.
+Guest networks may isolate devices. If the PC's address changes, restart the phone
+server and rerun the helper. An existing phone-server process must be stopped first.
+
+Use **Stop Phone Access.cmd** to stop the server and its workers, or close its
+console window. Reopening the start launcher while it is already running reopens
+the pairing page. It does not start automatically at Windows login. Requests use
+local HTTP, intended for a trusted home network, not public hosting. The random
+pairing key is saved only in ignored `output/phone-access.json`; QR codes and the
+pairing page also contain this key, so keep them private. The phone stores the key
+for its browser session; **Disconnect this browser** clears it. To invalidate every
+paired browser, stop the server, remove `output/phone-access.json`, and start again.
+
+Phone tasks are limited to one at a time and six minutes. Refreshes/searches use
+the same saved database and results as the desktop app. Avoid starting simultaneous
+desktop and phone searches because both update the shared last-results file.
+Phone dependencies are separate in `requirements-phone.txt`; setup installs them
+automatically. Tests: `.venv\Scripts\python.exe -m unittest test_phone test_careers test_matching -v`.
+
+## Desktop access
+
 Double-click **Start Job Search.cmd**. Choose role, industry/skills, seniority,
 location and posting age. Combined searches Indeed, LinkedIn and Arbeitsagentur,
 and includes saved company-career jobs;

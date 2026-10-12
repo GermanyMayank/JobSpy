@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#123d35"><title>JobSpy · Your job search</title><link rel="stylesheet" href="/phone.css"><script src="/phone.js" defer></script></head>
+<body><header><div class="brand">JobSpy <span>GERMANY</span></div><h1>Your next step.</h1><p>Find opportunities. Go straight to the employer.</p></header>
+<main>
+<section id="connect" class="panel" hidden><h2>Connect to your PC</h2><p>Scan the QR code shown on your PC, or paste its access key below.</p><form id="pair"><label>Access key<input id="key" type="password" required autocomplete="off"></label><button>Connect</button></form></section>
+<div id="app" hidden>
+<nav aria-label="Main navigation"><button class="tab active" data-tab="search">Search</button><button class="tab" data-tab="results">Results <span id="badge"></span></button><button class="tab" data-tab="companies">Companies</button></nav>
+<div class="statusbar"><p id="status" role="status" aria-live="polite">Connecting…</p><button id="cancel" class="quiet" hidden>Stop</button></div>
+<section id="search" class="view panel"><div class="eyebrow">FIND YOUR FIT</div><h2>What are you looking for?</h2><form id="searchForm">
+<label>Job position<input name="role" value="Project manager" maxlength="160" required></label>
+<label>Industry or skills<input name="industry" value="Solar / photovoltaics" maxlength="160"></label>
+<div class="grid"><label>Seniority<select name="seniority"><option>Junior / entry level</option><option>Any</option><option>Mid-level</option><option>Senior</option></select></label><label>Location<input name="location" value="Germany" maxlength="160" required></label></div>
+<label>Where to search<select name="site"><option>Company careers</option><option>Combined</option><option>indeed</option><option>linkedin</option><option>arbeitsagentur</option><option>glassdoor</option></select><small>Company careers searches saved feeds quickly. Combined also checks job boards.</small></label>
+<div class="grid"><label>Posted within days<input name="days" type="number" min="1" max="100" value="7" required></label><label>Maximum results<input name="count" type="number" min="1" max="100" value="30" required></label></div>
+<label class="check"><input name="hide_mismatch" type="checkbox" checked> Hide detected experience mismatches</label><label class="check"><input name="remote" type="checkbox"> Fully remote flag required</label>
+<p class="note">Unknown posting dates stay visible. Company feeds do not confirm fully remote work, so the remote filter excludes those listings.</p><button class="wide task">Find jobs <span aria-hidden="true">↗</span></button></form></section>
+<section id="results" class="view" hidden><div class="section-title"><h2>Saved results</h2><button id="reload" class="quiet">Reload</button></div><p id="resultSummary" class="muted"></p><details id="coverage"><summary>Coverage & search notes</summary><div id="coverageBody"></div></details><div id="jobList"></div></section>
+<section id="companies" class="view" hidden><div class="section-title"><h2>Your companies</h2><button id="refresh" class="task">Refresh feeds</button></div><p class="muted">Connected feeds contribute jobs to search. Saved pages open the employer’s website.</p><label>Find a company or sector<input id="companyFilter" placeholder="Solar, storage, company name…" type="search"></label><p id="companyCount" class="muted"></p><details class="panel"><summary>Add a company</summary><form id="addForm"><label>Company name<input name="name" required maxlength="100"></label><label>Personio career-page URL<input name="url" type="url" placeholder="https://company.jobs.personio.de/" required maxlength="250"></label><button class="task">Verify & add</button><p class="note">Other platforms can be opened from the directory but cannot yet be added as feeds.</p></form></details><div id="companyList"></div></section>
+<footer>Runs on your PC · No AI or paid services<br><button id="disconnect" class="quiet">Disconnect this browser</button></footer>
+</div></main></body></html>
