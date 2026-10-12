@@ -1,47 +1,47 @@
-# Smart Germany job search
+# Germany job search — no AI
 
-Double-click **Start Job Search.cmd**, fill in the role, industry or skills,
-seniority, location and posting age, then click **Search jobs**. The editable
-search-title preview shows the queries sent to the selected board.
+Double-click **Start Job Search.cmd**. Choose role, industry/skills, seniority,
+location and posting age. Combined searches Indeed, LinkedIn and Arbeitsagentur;
+you can also select one source (including optional Glassdoor).
 
-For example, **Project manager / Solar / Junior** searches project management,
-project coordination and German photovoltaic titles. Seniority is assessed
-after collection so jobs that omit junior are not automatically lost.
-Common role families use an English/German title catalogue. Unknown roles
-keep their original title; add alternatives separated by semicolons if useful.
+Related English/German titles are expanded from a visible, editable catalogue.
+Project management includes Projektmanager, Projektleiter, Projektkoordinator,
+Projektassistenz and project coordinator. Solar expands to solar/Photovoltaik;
+it does not silently broaden into unrelated renewable sectors. For unrecognised
+roles, add title alternatives separated by semicolons (maximum six).
 
-A free multilingual Sentence Transformers model runs on your CPU and ranks
-job titles and description excerpts by meaning, with seniority adjustments.
-It is not a chatbot, an unrestricted natural-language parser or LinkedIn's AI.
-Seniority checks use explicit title cues and stated minimum years; missing
-information stays unknown. Hide clear experience mismatches excludes detected
-conflicts, not all unsuitable jobs. Mid-level checks junior and explicit
-leadership titles, but cannot infer exact experience requirements.
+Matching is deterministic: a related title gets 50 points, or a role mentioned
+only in the description gets 20. An industry/skill term adds 30; explicit junior
+or senior title agreement adds 15. Detected experience conflicts subtract 40,
+or are hidden when that option is selected. Newest listings break ties. Scores
+are sorting rules, not probabilities; the report shows supporting terms/excerpts.
 
-Each result shows a relevant excerpt and experience check. Verify language,
-location, eligibility and availability on the listing. No CV is needed and no
-application is sent. Broader renewable-energy queries can return jobs outside
-solar; semantic ranking is not a strict industry filter.
+Known old listings are excluded. Unknown dates and seniority remain visible and
+labelled. Seniority rules recognise explicit titles and minimum-years phrases,
+not every wording of a requirement. Industry/skills are preferences, not mandatory
+filters. Remote-only requires the source's remote flag; it excludes unknown BA
+remote statuses because home-office-possible may mean hybrid. Check each advert.
+Location is filtered by the source, with approximately 50 km around a city;
+Germany/Deutschland searches nationwide. No language or visa eligibility is inferred.
 
-HTML reports, CSV exports and logs stay in output/. Open last results reopens
-the latest report. Queries go to the selected board; ranking happens locally.
-Results, logs, local environments and model downloads are excluded from Git.
+Matching URLs (ignoring tracking parameters), or identical normalised title,
+company AND location, are consolidated. Different locations remain separate.
+Missing identity fields are never sufficient to merge. Sources are retained and
+alternative listing URLs are included in CSV. Similar but differently worded
+cross-board duplicates may remain.
 
-## Setup
+The coverage section lists every source/query outcome, including empty, failed
+and timed-out requests. Empty means no returned records, not guaranteed absence
+of vacancies. Source work has a 45-second limit per query, with three concurrent
+workers; the GUI allows six minutes overall. Up to 30 candidates per query/source
+are collected. A failed source does not discard other results. Cancel stops the
+search process tree on Windows. Source descriptions may be unavailable.
 
-Windows needs Python 3.10+ with tkinter and internet access. The launcher sets
-up an isolated .venv, installs dependencies and downloads the model once.
-Allow several minutes and roughly 1-2 GB disk space including dependencies.
-There is no paid API, subscription, proxy or AI service. Models stay in .models/.
+HTML/CSV reports and logs stay in output/ and are excluded from Git. No paid
+services, model downloads, AI inference, CV upload or automatic applications.
+Python 3.10+ with tkinter and internet access is required; setup creates .venv.
 
-Sources can block or rate-limit requests. Empty responses do not prove there
-are no jobs. Empty and failed subsearches appear as warnings. A GUI search
-stops after five minutes; try fewer titles or another source if it times out.
-Cancel or closing the app stops the search. Posting dates and remote flags
-come from job boards. Up to four queries and 50 candidates per query are
-collected; duplicate URLs are removed. Long descriptions use representative
-chunks. This is not an exhaustive search or a hiring probability score.
-
-Upstream: https://github.com/speedyapply/JobSpy (MIT).
-Model: https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-Tests: .venv\Scripts\python.exe -m unittest test_smart_search -v
+Tests: .venv\Scripts\python.exe -m unittest test_matching -v
+Upstream JobSpy: https://github.com/speedyapply/JobSpy (MIT).
+Arbeitsagentur interface reference: https://github.com/bundesAPI/jobsuche-api
+This is an unofficially documented interface and may change.
