@@ -28,6 +28,13 @@ COMPANIES = [
 ]
 
 
+def directory():
+    path = ROOT / 'company_directory.json'
+    if not path.exists():
+        return {'companies': [], 'profile': '', 'coverage_note': ''}
+    return json.loads(path.read_text(encoding='utf-8'))
+
+
 def connect(path=None):
     OUTPUT.mkdir(exist_ok=True)
     db = sqlite3.connect(path or OUTPUT / 'careers.sqlite3', timeout=30)
@@ -42,8 +49,11 @@ def connect(path=None):
         PRIMARY KEY(company,id));
     ''')
     with db:
+        seeds = dict((slug, name) for name, slug in COMPANIES)
+        seeds.update((c['slug'], c['name']) for c in directory()['companies']
+                     if c.get('collection') == 'personio')
         db.executemany('INSERT OR IGNORE INTO companies(id,name) VALUES (?,?)',
-                       [(slug, name) for name, slug in COMPANIES])
+                       list(seeds.items()))
     return db
 
 
@@ -165,7 +175,8 @@ GERMAN_PLACES = ('germany deutschland deutschlandweit bundesweit berlin hamburg 
                  'neukirchen-vluyn moers neumunster oldenburg osnabruck ostdeutschland '
                  'paderborn pforzheim nagold rostock neubrandenburg stralsund remscheid '
                  'riederich rosenheim saarbrucken saarlouis sigmaringen singen tangstedt '
-                 'ulm weimar wurzburg').split()
+                 'ulm weimar wurzburg bochum herbsleben zittau holzkirchen kamen cloppenburg '
+                 'aachen baesweiler trier schafflund nordrhein-westfalen').split()
 
 
 def location_matches(location, requested):
@@ -210,8 +221,23 @@ def status_report():
         parts.append('<tr>' + ''.join(f'<td>{html.escape(str(v))}</td>' for v in
                      (c['name'], c['status'] or 'Not checked', c['count'] if c['count'] is not None else '—', success, c['error'] or '')) + '</tr>')
     db.close()
+    catalog = directory()
+    cards = []
+    for c in sorted(catalog['companies'], key=lambda c: c['name'].casefold()):
+        esc = lambda key: html.escape(str(c.get(key, '')))
+        state = 'Connected feed — see latest scan above' if c.get('collection') == 'personio' else 'Saved career page — not scanned automatically'
+        url = c['career_url']
+        link = f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">Open careers</a>' if url.startswith('https://') else ''
+        cards.append(f'<tr class="company"><td>{esc("name")}</td><td>{esc("category")}</td><td>{esc("relevance")}</td><td>{state}<br>{esc("collection_note")}</td><td>{link}<br><small>{esc("page_check")}</small></td></tr>')
+    directory_html = (f'<h2 id="directory">Saved company directory ({len(cards)})</h2><p>{html.escape(catalog.get("profile", ""))}</p>'
+                      f'<p>{html.escape(catalog.get("coverage_note", ""))} Researched: {html.escape(catalog.get("researched_on", ""))}.</p>'
+                      '<label>Find a company or sector <input id="filter" placeholder="e.g. solar, storage, junior"></label>'
+                      '<table><tr><th>Company</th><th>Sector</th><th>Why it is relevant</th><th>Collection</th><th>Career page</th></tr>'
+                      + ''.join(cards) + '</table><script>document.getElementById("filter").addEventListener("input",function(){const q=this.value.toLowerCase();document.querySelectorAll("tr.company").forEach(r=>{r.hidden=!r.textContent.toLowerCase().includes(q)});});</script>')
     path = OUTPUT / 'company-status.html'
     path.write_text('<!doctype html><meta charset="utf-8"><title>Company career coverage</title><style>body{font:16px system-ui;margin:35px}td,th{padding:12px;text-align:left;border-bottom:1px solid #ccc}table{border-collapse:collapse}</style><h1>Company career coverage</h1><p>Public Personio feeds. Successful feeds have a 6-hour refresh cooldown; failed feeds can be retried after 5 minutes. Counts include all countries and roles. Failed scans preserve saved jobs. Jobs absent in two successful scans at least 6 hours apart are hidden, not deleted. Refresh runs only when requested while this app is open.</p><table><tr><th>Company</th><th>Status</th><th>Feed jobs</th><th>Last success</th><th>Notes</th></tr>' + ''.join(parts) + '</table>', encoding='utf-8')
+    page = path.read_text(encoding='utf-8').replace('<h1>Company career coverage</h1>', f'<h1>Company career coverage</h1><p><a href="#directory">Browse {len(cards)} saved companies</a></p>')
+    path.write_text(page + directory_html, encoding='utf-8')
     return path
 
 

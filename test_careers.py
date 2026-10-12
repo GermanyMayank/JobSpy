@@ -86,6 +86,29 @@ class CareerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 careers.company_id(url)
 
+    def test_directory_has_unique_urls_and_seeds_only_supported_feeds(self):
+        catalog = careers.directory()['companies']
+        self.assertEqual(len({c['career_url'] for c in catalog}), len(catalog))
+        seeded = {r[0] for r in self.db.execute('SELECT id FROM companies')}
+        for company in catalog:
+            self.assertTrue(company['relevance'])
+            self.assertTrue(company['source_url'].startswith('https://'))
+            if company['collection'] == 'personio':
+                self.assertEqual(careers.company_id(company['career_url']), company['slug'])
+                self.assertIn(company['slug'], seeded)
+            elif company.get('slug'):
+                self.assertNotIn(company['slug'], seeded)
+
+    def test_directory_does_not_activate_manual_pages(self):
+        with patch.object(careers, 'directory', return_value={'companies': [
+            {'name': 'Test supported', 'slug': 'test-supported', 'collection': 'personio'},
+            {'name': 'Test manual', 'slug': 'test-manual', 'collection': 'manual'}]}):
+            db = careers.connect(':memory:')
+            ids = {r[0] for r in db.execute('SELECT id FROM companies')}
+            db.close()
+        self.assertIn('test-supported', ids)
+        self.assertNotIn('test-manual', ids)
+
 
 if __name__ == '__main__':
     unittest.main()

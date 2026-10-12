@@ -50,11 +50,21 @@ Click **Refresh companies**, then search with **Company careers** or **Combined*
 and a display name. The feed must pass validation before it is saved. This first
 version supports Personio only; Greenhouse, Lever and custom sites are not yet supported.
 
-Ten initial feeds were checked on 2026-10-12: MaxSolar, WIRSOL Roof Solutions,
-Kronos Solar, heimWatt, 1KOMMA5°, Trina Solar, hep solar, Sungrow Europe,
-einhundert Energie and Solar Materials. Live verification returned 526 jobs
-across all countries and roles; one job link per company returned HTTP 200 and
-contained the expected title. This count is a dated observation, not a guarantee.
+The researched directory in `company_directory.json` contains 78 employers as of
+2026-10-12: solar/PV specialists plus related storage, wind and energy-infrastructure
+companies. It targets junior project management, coordination and assistance in
+Germany. Sector relevance is not proof of an available junior vacancy or eligibility.
+This is a broad researched directory, not an exhaustive list of German employers.
+
+37 public feeds are connected, with 945 saved listings across all roles and countries
+at verification. The other 41 employers have saved career-page links and are clearly
+marked as not scanned automatically. This includes providers requiring a different
+connector and Personio employers with disabled XML feeds. **Company status** includes
+the searchable directory, sector, relevance explanation, career link and verification
+status. 74 career pages opened successfully in the initial page check; four refused
+the automated request and retain employer-owned search-result evidence. Counts are
+dated observations, not guarantees. Connected feeds are automatically seeded on a new
+installation; locally added companies and saved jobs are preserved.
 
 Company jobs are stored in `output/careers.sqlite3`. Stable company/job IDs prevent
 duplicates. Refresh commits each validated feed independently. Failed, malformed,
