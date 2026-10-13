@@ -21,8 +21,8 @@ def search(args):
     OUTPUT.mkdir(exist_ok=True)
     queries = args.queries.split(";") if args.queries else expand_queries(args.role, args.industry)
     queries = list(dict.fromkeys(q.strip() for q in queries if q.strip()))[:6]
-    sites = ["indeed", "linkedin", "arbeitsagentur"] if args.site == "Combined" else [args.site]
-    collected, warnings, coverage = ([], [], []) if args.site == "Company careers" else collect(queries, sites, args.location, args.days, args.count, args.remote)
+    sites = ["indeed", "linkedin", "arbeitsagentur", "eejobs", "greenjobs"] if args.site == "Combined" else [args.site]
+    collected, warnings, coverage = ([], [], []) if args.site == "Company careers" else collect(queries, sites, args.location, args.days, args.count, args.remote, role=args.role)
     if args.site in ("Combined", "Company careers"):
         from careers import cached_jobs
         career_rows, career_notes, career_coverage = cached_jobs(args.role, args.location)
@@ -82,7 +82,7 @@ def desktop():
     for row, (label, var) in enumerate([("Job position / role", role), ("Industry or key skills", industry), ("Seniority", seniority), ("City / location", location), ("Source", site), ("Posted within days", days), ("Maximum results", count)], start=2):
         ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", pady=7)
         if var is site:
-            widget = ttk.Combobox(frame, textvariable=var, values=["Combined", "Company careers", "indeed", "linkedin", "arbeitsagentur", "glassdoor"], state="readonly")
+            widget = ttk.Combobox(frame, textvariable=var, values=["Combined", "Company careers", "indeed", "linkedin", "arbeitsagentur", "glassdoor", "eejobs", "greenjobs"], state="readonly")
         elif var is seniority:
             widget = ttk.Combobox(frame, textvariable=var, values=["Any", "Junior / entry level", "Mid-level", "Senior"], state="readonly")
         else:
@@ -267,7 +267,7 @@ if __name__ == "__main__":
     parser.add_argument("--search", action="store_true")
     parser.add_argument("--role", default="software engineer")
     parser.add_argument("--location", default="Berlin, Germany")
-    parser.add_argument("--site", choices=["Combined", "Company careers", "indeed", "linkedin", "arbeitsagentur", "glassdoor"], default="Combined")
+    parser.add_argument("--site", choices=["Combined", "Company careers", "indeed", "linkedin", "arbeitsagentur", "glassdoor", "eejobs", "greenjobs"], default="Combined")
     parser.add_argument("--days", type=int, default=7)
     parser.add_argument("--count", type=int, default=20)
     parser.add_argument("--remote", action="store_true")

@@ -54,6 +54,9 @@ def arbeitsagentur(query, location, days, count, remote):
 
 
 def worker(options):
+    if options["site"] in ("eejobs", "greenjobs"):
+        from renewable_boards import collect as board_collect
+        return board_collect(options["site"], options["query"], options["location"], options["days"], options["count"], options["remote"])
     if options["site"] == "arbeitsagentur":
         return arbeitsagentur(options["query"], options["location"], options["days"], options["count"], options["remote"])
     from jobspy import scrape_jobs
@@ -64,8 +67,8 @@ def worker(options):
     return json.loads(frame.to_json(orient="records", date_format="iso")), []
 
 
-def collect(queries, sites, location, days, count, remote):
-    tasks = [dict(query=q, site=s, location=location, days=days, count=min(30, max(15, count)), remote=remote) for s in sites for q in queries]
+def collect(queries, sites, location, days, count, remote, role=None):
+    tasks = [dict(query=q, site=s, location=location, days=days, count=min(30, max(15, count)), remote=remote) for s in sites for q in ([role or queries[0]] if s in ("eejobs", "greenjobs") else queries)]
     def run(options):
         try:
             process = subprocess.Popen([sys.executable, str(Path(__file__).resolve())], stdin=subprocess.PIPE,

@@ -48,7 +48,7 @@
       "page_check": "HTTP 200 on 2026-10-12"
     },
     {
-      "name": "1KOMMA5°",
+      "name": "1KOMMA5Â°",
       "slug": "1komma5grad",
       "career_url": "https://1komma5grad.jobs.personio.de/",
       "category": "Solar / PV",
@@ -892,6 +892,88 @@
       "researched_on": "2026-10-12",
       "collection_note": "Career page saved; automatic collection not supported yet",
       "page_check": "HTTP 200 on 2026-10-12"
+    },
+    {
+      "name": "Greencells Group",
+      "slug": "greencells-gmbh",
+      "career_url": "https://greencells-gmbh.jobs.personio.de/",
+      "category": "Solar / PV",
+      "relevance": "Solar EPC, construction and project delivery",
+      "collection": "personio",
+      "researched_on": "2026-10-12",
+      "source_url": "https://greencells.com/careers/",
+      "page_check": "Public XML feed HTTP 200; validated 2026-10-12",
+      "feed_verified_on": "2026-10-12"
+    },
+    {
+      "name": "Energiekonzepte Deutschland",
+      "slug": "energiekonzepte-deutschland",
+      "career_url": "https://energiekonzepte-deutschland.jobs.personio.de/",
+      "category": "Solar / PV and storage",
+      "relevance": "Residential solar and battery installations; feed currently empty",
+      "collection": "personio",
+      "researched_on": "2026-10-12",
+      "source_url": "https://energiekonzepte-deutschland.jobs.personio.de/",
+      "page_check": "Public XML feed HTTP 200; validated 2026-10-12",
+      "feed_verified_on": "2026-10-12"
+    },
+    {
+      "name": "GETEC GRUPPE",
+      "slug": "getec-holding",
+      "career_url": "https://getec-holding.jobs.personio.de/",
+      "category": "Energy infrastructure / solar",
+      "relevance": "Group includes GETEC green energy and BLIS Solar; group feed also includes other business units",
+      "collection": "personio",
+      "researched_on": "2026-10-12",
+      "source_url": "https://getec-holding.jobs.personio.de/",
+      "page_check": "Public XML feed HTTP 200; validated 2026-10-12",
+      "feed_verified_on": "2026-10-12"
+    },
+    {
+      "name": "greenwind",
+      "slug": "greenwind-group",
+      "career_url": "https://greenwind-group.jobs.personio.de/",
+      "category": "Wind / solar",
+      "relevance": "Wind and solar project development, delivery and operations",
+      "collection": "personio",
+      "researched_on": "2026-10-12",
+      "source_url": "https://www.greenwindgroup.de/karriere/",
+      "page_check": "Public XML feed HTTP 200; validated 2026-10-12",
+      "feed_verified_on": "2026-10-12"
+    },
+    {
+      "name": "envelio",
+      "slug": "envelio",
+      "career_url": "https://envelio.jobs.personio.de/",
+      "category": "Grid / energy software",
+      "relevance": "Grid planning software supporting renewable integration; adjacent energy sector",
+      "collection": "personio",
+      "researched_on": "2026-10-12",
+      "source_url": "https://envelio.jobs.personio.de/",
+      "page_check": "Public XML feed HTTP 200; validated 2026-10-12",
+      "feed_verified_on": "2026-10-12"
+    },
+    {
+      "name": "Schoenergie",
+      "career_url": "https://schoenergie.de/karriere/",
+      "category": "Solar / PV",
+      "relevance": "Solar installation, construction and operations",
+      "collection": "manual",
+      "researched_on": "2026-10-12",
+      "source_url": "https://schoenergie.de/karriere/",
+      "page_check": "Official career page verified 2026-10-12",
+      "collection_note": "Saved career link; no automatic connector verified."
+    },
+    {
+      "name": "Envalue GmbH",
+      "career_url": "https://www.envalue.de/karriere",
+      "category": "Solar / PV",
+      "relevance": "Solar installation, construction and operations",
+      "collection": "manual",
+      "researched_on": "2026-10-12",
+      "source_url": "https://www.envalue.de/karriere",
+      "page_check": "Official career page verified 2026-10-12",
+      "collection_note": "Saved career link; no automatic connector verified."
     }
   ]
 }

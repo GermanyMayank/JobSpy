@@ -1,38 +1,5 @@
 # Germany job search — no AI
 
-## Phone access on the same Wi-Fi
-
-Double-click **Start Phone Access.cmd** on your PC. It opens a local pairing page
-with a QR code. Keep the PC awake, connect your phone to the same Wi-Fi, and scan
-the code with the phone camera. The phone interface supports searching, viewing
-results and descriptions, opening application links, filtering the company directory,
-refreshing feeds, adding supported companies and stopping an active phone task.
-The company-only source is selected initially for a fast search of saved jobs.
-
-If Windows blocks the connection, run **Allow Phone Access.cmd** once and accept
-the administrator prompt. It allows only the current interface/local address, local
-subnet, Python executable and TCP port 8765. It does not change the network profile,
-disable the firewall, forward a router port or publish the app on the internet.
-Guest networks may isolate devices. If the PC's address changes, restart the phone
-server and rerun the helper. An existing phone-server process must be stopped first.
-
-Use **Stop Phone Access.cmd** to stop the server and its workers, or close its
-console window. Reopening the start launcher while it is already running reopens
-the pairing page. It does not start automatically at Windows login. Requests use
-local HTTP, intended for a trusted home network, not public hosting. The random
-pairing key is saved only in ignored `output/phone-access.json`; QR codes and the
-pairing page also contain this key, so keep them private. The phone stores the key
-for its browser session; **Disconnect this browser** clears it. To invalidate every
-paired browser, stop the server, remove `output/phone-access.json`, and start again.
-
-Phone tasks are limited to one at a time and six minutes. Refreshes/searches use
-the same saved database and results as the desktop app. Avoid starting simultaneous
-desktop and phone searches because both update the shared last-results file.
-Phone dependencies are separate in `requirements-phone.txt`; setup installs them
-automatically. Tests: `.venv\Scripts\python.exe -m unittest test_phone test_careers test_matching -v`.
-
-## Desktop access
-
 Double-click **Start Job Search.cmd**. Choose role, industry/skills, seniority,
 location and posting age. Combined searches Indeed, LinkedIn and Arbeitsagentur,
 and includes saved company-career jobs;
@@ -83,14 +50,14 @@ Click **Refresh companies**, then search with **Company careers** or **Combined*
 and a display name. The feed must pass validation before it is saved. This first
 version supports Personio only; Greenhouse, Lever and custom sites are not yet supported.
 
-The researched directory in `company_directory.json` contains 78 employers as of
+The researched directory in `company_directory.json` contains 85 employers as of
 2026-10-12: solar/PV specialists plus related storage, wind and energy-infrastructure
 companies. It targets junior project management, coordination and assistance in
 Germany. Sector relevance is not proof of an available junior vacancy or eligibility.
 This is a broad researched directory, not an exhaustive list of German employers.
 
-37 public feeds are connected, with 945 saved listings across all roles and countries
-at verification. The other 41 employers have saved career-page links and are clearly
+42 public feeds are connected, with 1,010 saved listings across all roles and countries
+at verification. The other 43 employers have saved career-page links and are clearly
 marked as not scanned automatically. This includes providers requiring a different
 connector and Personio employers with disabled XML feeds. **Company status** includes
 the searchable directory, sector, relevance explanation, career link and verification
@@ -127,3 +94,18 @@ Personio feed documentation: https://developer.personio.de/v1.0/reference/get_xm
 Upstream JobSpy: https://github.com/speedyapply/JobSpy (MIT).
 Arbeitsagentur interface reference: https://github.com/bundesAPI/jobsuche-api
 This is an unofficially documented interface and may change.
+
+Renewable-energy expansion (2026-10-13): Combined search now includes eejobs and
+greenjobs public Atom feeds. Each board is fetched once per search; related titles
+are checked against structured job details, Germany/city, age and expiry. greenjobs
+requires renewable-energy terms. Feed windows are limited, not full archives; their
+sizes and failures appear in coverage notes. At most 18 detail pages per board are
+checked, within the existing 45-second source limit. No account or paid API needed.
+
+The directory now contains 85 employers: 42 connected feeds and 43 saved career
+links. New feeds: Greencells, Energiekonzepte Deutschland (currently empty), GETEC
+GRUPPE, greenwind and envelio. New saved links: Schoenergie and Envalue GmbH.
+GETEC contains several business units; sector matching still ranks individual jobs.
+Phone access has been removed; use Start Job Search.cmd on the PC.
+
+Additional tests: .venv\Scripts\python.exe -m unittest test_renewable_boards -v
